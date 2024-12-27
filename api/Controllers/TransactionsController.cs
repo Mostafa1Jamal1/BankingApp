@@ -1,10 +1,10 @@
 ﻿using System.Security.Principal;
 using BankingAPI.Models.DTOs;
-using BankingApp.Models;
-using BankingApp.Models.DTOs;
+using api.Models;
+using api.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BankingApp.Controllers
+namespace api.Controllers
 {
     [ApiController]
     [Route("api/transactions")]

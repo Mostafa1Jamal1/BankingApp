@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BankingApp.Models
+namespace api.Models
 {
     public class Transaction
     {

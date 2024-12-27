@@ -1,4 +1,4 @@
-﻿namespace BankingApp.Models
+﻿namespace api.Models
 {
     public static class BankRepositry
     {

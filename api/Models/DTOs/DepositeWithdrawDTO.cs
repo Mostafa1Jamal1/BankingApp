@@ -1,4 +1,4 @@
-﻿namespace BankingApp.Models.DTOs
+﻿namespace api.Models.DTOs
 {
     public class DepositeWithdrawDTO : AccountNumberC
     {
