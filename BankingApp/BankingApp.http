@@ -1,0 +1,8 @@
+# This is used instead of Swagger in .Net version 9
+
+@BankingApp_HostAddress = http://localhost:5091
+
+GET {{BankingApp_HostAddress}}/
+Accept: application/json
+
+###
