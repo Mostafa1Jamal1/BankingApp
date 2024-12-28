@@ -14,6 +14,8 @@ namespace api.Models
         public DbSet<Account> Accounts { get; set; }
         public DbSet<SavingsAccount> SavingsAccounts { get; set; }
         public DbSet<CheckingAccount> CheckingAccounts { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
+
 
         // Configurations for the models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
