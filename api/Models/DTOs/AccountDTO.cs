@@ -14,7 +14,7 @@ namespace api.Models.DTOs
         [Required]
         public string Name { get; set; }
         [Required]
-        public float Balance { get; set; }
+        public decimal Balance { get; set; }
     }
 
 

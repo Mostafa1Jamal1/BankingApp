@@ -2,6 +2,6 @@
 {
     public class DepositeWithdrawDTO : AccountNumberC
     {
-        public float Amount { get; set; }
+        public decimal Amount { get; set; }
     }
 }

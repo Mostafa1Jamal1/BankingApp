@@ -12,7 +12,7 @@ namespace api.Models
 
         [Required]
         public string AddedTo { get; set; } // Target account or "Cash"
-        public float Amount { get; set; }
+        public decimal Amount { get; set; }
         public DateTime TimeStamp { get; set; }
     }
 }

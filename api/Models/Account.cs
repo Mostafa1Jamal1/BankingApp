@@ -1,16 +1,11 @@
-﻿using api.Models.DTOs;
-using System.Data.Common;
-using System.Xml;
-using System;
-
-namespace api.Models
+﻿namespace api.Models
 {
     public class Account
     {
         public int Id { get; set; }
         public string Name { get; set; }
         public string AccountNumber { get; set; }
-        public float Balance { get; set; }
+        public decimal Balance { get; set; }
         public string Currency { get; set; }
         public string Status { get; set; }
         public DateTime CreatedAt { get; set; }
