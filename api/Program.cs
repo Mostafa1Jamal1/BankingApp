@@ -1,3 +1,5 @@
+using api.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Support JSON and XML only
 builder.Services.AddControllers(options => options.ReturnHttpNotAcceptable = true).AddXmlDataContractSerializerFormatters();
+
+// Configure Entity Framework and Database Connection
+builder.Services.AddDbContext<BankingDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
