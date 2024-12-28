@@ -38,10 +38,11 @@ namespace api.Controllers
             {
                 Id = BankRepositry.Transactions.Count(),
                 Type = "Deposite",
-                DeductedFrom = "Cash",
-                AddedTo = account.AccountNumber,
+                DeductedFromId = "Cash",
+                AddedToId = account.AccountNumber,
                 Amount = data.Amount,
-                TimeStamp = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
             };
             BankRepositry.Transactions.Add(transaction);
             return NoContent();
@@ -65,10 +66,11 @@ namespace api.Controllers
             {
                 Id = BankRepositry.Transactions.Count(),
                 Type = "Withdraw",
-                DeductedFrom = account.AccountNumber,
-                AddedTo = "Cash",
+                DeductedFromId = account.AccountNumber,
+                AddedToId = "Cash",
                 Amount = data.Amount,
-                TimeStamp = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
+                UpdatedAt= DateTime.Now,
             };
             BankRepositry.Transactions.Add(transaction);
             return NoContent();
@@ -92,10 +94,11 @@ namespace api.Controllers
             {
                 Id = BankRepositry.Transactions.Count(),
                 Type = "Transfer",
-                DeductedFrom = FromAccount.AccountNumber,
-                AddedTo = ToAccount.AccountNumber,
+                DeductedFromId = FromAccount.AccountNumber,
+                AddedToId = ToAccount.AccountNumber,
                 Amount = data.Amount,
-                TimeStamp = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
             };
             BankRepositry.Transactions.Add(transaction);
             return NoContent();

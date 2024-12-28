@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Reflection.Metadata;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Models
 {
@@ -15,7 +16,6 @@ namespace api.Models
         public DbSet<SavingsAccount> SavingsAccounts { get; set; }
         public DbSet<CheckingAccount> CheckingAccounts { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
-
 
         // Configurations for the models
         protected override void OnModelCreating(ModelBuilder modelBuilder)

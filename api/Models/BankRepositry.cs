@@ -11,6 +11,10 @@ namespace api.Models
                 AccountNumber = "6666666666",
                 Name = "user1",
                 Balance = 0m,
+                Currency = "USD",
+                Status = "Active",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
             },
             new Account
             {
@@ -18,6 +22,10 @@ namespace api.Models
                 AccountNumber = "7777777777",
                 Name = "user2",
                 Balance = 5454.5m,
+                Currency = "USD",
+                Status = "Active",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
             }
         };
         public static List<Transaction> Transactions { get; set; } = new List<Transaction>
@@ -26,8 +34,10 @@ namespace api.Models
             {
                 Id = 0,
                 Type = "testType",
-                Amount = 0m,
-                TimeStamp = DateTime.Now,
+                Status = "Confirmed",
+                Amount = 100m,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
             }
         };
     }

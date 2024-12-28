@@ -17,9 +17,9 @@ namespace api.Models.Configurations
             // Properties
             builder.Property(x => x.Id).UseIdentityColumn();
             builder.Property(x => x.Name).IsRequired().HasMaxLength(250);
-            builder.Property(x => x.AccountNumber).IsRequired().HasMaxLength(34);
+            builder.Property(x => x.AccountNumber).IsRequired().HasMaxLength(34); // IBAN length
             builder.Property(x => x.Balance).IsRequired().HasColumnType("decimal(18,2)");
-            builder.Property(x => x.Currency).IsRequired().HasMaxLength(3);
+            builder.Property(x => x.Currency).IsRequired().HasMaxLength(5);
             builder.Property(x => x.Status).IsRequired().HasMaxLength(50);
             builder.Property(x => x.CreatedAt).HasDefaultValueSql("GETDATE()");
             builder.Property(x => x.UpdatedAt).HasDefaultValueSql("GETDATE()").ValueGeneratedOnUpdate();
