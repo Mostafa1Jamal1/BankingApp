@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialMig : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -26,7 +26,7 @@ namespace api.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
                     AccountType = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     OverdraftLimit = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    InterestRate = table.Column<double>(type: "float", nullable: true)
+                    InterestRate = table.Column<decimal>(type: "decimal(6,3)", nullable: true)
                 },
                 constraints: table =>
                 {

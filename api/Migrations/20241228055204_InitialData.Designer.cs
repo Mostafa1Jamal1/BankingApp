@@ -12,8 +12,8 @@ using api.Models;
 namespace api.Migrations
 {
     [DbContext(typeof(BankingDbContext))]
-    [Migration("20241228025756_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20241228055204_InitialData")]
+    partial class InitialData
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -125,16 +125,44 @@ namespace api.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasDiscriminator().HasValue("Checking");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 2,
+                            AccountNumber = "7777777777",
+                            Balance = 100000.00m,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Currency = "USD",
+                            Name = "Mostafa Personal",
+                            Status = "Active",
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            OverdraftLimit = 500m
+                        });
                 });
 
             modelBuilder.Entity("api.Models.SavingsAccount", b =>
                 {
                     b.HasBaseType("api.Models.Account");
 
-                    b.Property<double>("InterestRate")
-                        .HasColumnType("float");
+                    b.Property<decimal>("InterestRate")
+                        .HasColumnType("decimal(6,3)");
 
                     b.HasDiscriminator().HasValue("Savings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AccountNumber = "6666666666",
+                            Balance = 500000.00m,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Currency = "USD",
+                            Name = "Mostafa Corp",
+                            Status = "Active",
+                            UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            InterestRate = 0.15m
+                        });
                 });
 #pragma warning restore 612, 618
         }

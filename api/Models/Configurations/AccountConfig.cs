@@ -40,7 +40,23 @@ namespace api.Models.Configurations
     {
         public void Configure(EntityTypeBuilder<SavingsAccount> builder)
         {
-            builder.Property(x => x.InterestRate).IsRequired();
+            builder.Property(x => x.InterestRate).IsRequired().HasColumnType("decimal(6,3)");
+
+            builder.HasData(
+            new SavingsAccount
+            {
+                Id = 1,
+                Name = "Mostafa Corp",
+                AccountNumber = "6666666666",
+                Balance = 500000.00m,
+                Currency = "USD",
+                Status = "Active",
+                CreatedAt = new DateTime(2024, 1, 1),
+                UpdatedAt = new DateTime(2024, 1, 1),
+                InterestRate = 0.15,
+            }
+            );
+
         }
     }
 
@@ -49,7 +65,22 @@ namespace api.Models.Configurations
     {
         public void Configure(EntityTypeBuilder<CheckingAccount> builder)
         {
-            builder.Property(x => x.OverdraftLimit).IsRequired();
+            builder.Property(x => x.OverdraftLimit).IsRequired().HasColumnType("decimal(18,2)");
+
+            builder.HasData(
+            new CheckingAccount
+            {
+                Id = 2,
+                Name = "Mostafa Personal",
+                AccountNumber = "7777777777",
+                Balance = 100000.00m,
+                Currency = "USD",
+                Status = "Active",
+                CreatedAt = new DateTime(2024, 1, 1),
+                UpdatedAt = new DateTime(2024, 1, 1),
+                OverdraftLimit = 500,
+            }
+            );
         }
     }
 }
