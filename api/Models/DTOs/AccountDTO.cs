@@ -12,9 +12,15 @@ namespace api.Models.DTOs
     public class AccountDTO : AccountNumberC
     {
         [Required]
+        public string AccountType { get; set; }
+        [Required]
         public string Name { get; set; }
         [Required]
         public decimal Balance { get; set; }
+        [Required]
+        public string Currency { get; set; }
+        [Required]
+        public string Status { get; set; }
     }
 
 

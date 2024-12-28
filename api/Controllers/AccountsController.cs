@@ -10,11 +10,17 @@ namespace api.Controllers
     [ApiController]
     public class AccountsController : ControllerBase
     {
+        private readonly BankingDbContext _db;
+
+        public AccountsController(BankingDbContext db)
+        {
+            _db = db;
+        }
         [HttpGet(Name = "GetAllAccounts")]
         // GET api/accounts
         public ActionResult<IEnumerable<Account>> GetAllAccounts()
         {
-            return Ok(BankRepositry.Accounts);
+            return Ok(_db.Accounts);
         }
 
         [HttpGet("{id:int}", Name = "GetAccountById")]
@@ -24,7 +30,7 @@ namespace api.Controllers
             // There is no negative id - Client Error
             if (id <= 0)
                 return BadRequest("Id can not be negative");
-            var account = BankRepositry.Accounts.Where(n => n.Id == id).FirstOrDefault();
+            var account = _db.Accounts.Where(n => n.Id == id).FirstOrDefault();
             // If account not found - Client Error
             if (account == null)
                 return NotFound($"No account found with Id: {id}");
@@ -39,7 +45,7 @@ namespace api.Controllers
             // There is no negative id - Client Error
             if (id <= 0)
                 return BadRequest("Id can not be negative");
-            var account = BankRepositry.Accounts.Where(n => n.Id == id).FirstOrDefault();
+            var account = _db.Accounts.Where(n => n.Id == id).FirstOrDefault();
             // If account not found - Client Error
             if (account == null)
                 return NotFound($"No account found with Id: {id}");
@@ -56,18 +62,41 @@ namespace api.Controllers
             // No need for this as long as [APIController] attribute exist
             //if (!ModelState.IsValid)
             //    return BadRequest(ModelState);
-            var ExistAccount = BankRepositry.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefault();
+            var ExistAccount = _db.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefault();
             if (ExistAccount != null) return BadRequest($"Can bot use this Account number: {data.AccountNumber}");
-
-            int NewId = BankRepositry.Accounts.LastOrDefault().Id + 1;
-            var NewAccount = new Account
+            Account NewAccount;
+            switch (data.AccountType.ToLower())
             {
-                Id = NewId,
-                AccountNumber = data.AccountNumber,
-                Balance = data.Balance
-            };
-            BankRepositry.Accounts.Add(NewAccount);
-            return CreatedAtRoute("GetAccountById", new { id = NewAccount.Id }, NewAccount);
+                case "savings":
+                    NewAccount = new SavingsAccount
+                    {
+                        Name = data.Name,
+                        AccountNumber = data.AccountNumber,
+                        Balance = data.Balance,
+                        Currency = data.Currency,
+                        Status = data.Status,
+                        InterestRate = 0.15
+                    };
+                    break;
+
+                case "checking":
+                    NewAccount = new CheckingAccount
+                    {
+                        Name = data.Name,
+                        AccountNumber = data.AccountNumber,
+                        Balance = data.Balance,
+                        Currency = data.Currency,
+                        Status = data.Status,
+                        OverdraftLimit = 500m
+                    };
+                    break;
+
+                default:
+                    throw new ArgumentException($"Invalid account type: {data.AccountType}");
+            }
+            _db.Accounts.Add(NewAccount);
+            _db.SaveChanges();
+            return Ok("Account created Successfuly");
         }
 
         [HttpPut("{id:int}/update", Name = "UpdateAccount")]
@@ -78,12 +107,16 @@ namespace api.Controllers
                 return BadRequest("Id can not be negative");
             if (data == null)
                 return BadRequest("No data provided to update");
-            var account = BankRepositry.Accounts.Where(n => n.Id == id).FirstOrDefault();
+            var account = _db.Accounts.Where(n => n.Id == id).FirstOrDefault();
             if (account == null)
                 return NotFound($"No account found with Id: {id}");
             account.Balance = data.Balance;
             account.AccountNumber = data.AccountNumber;
             account.Name = data.Name;
+            account.Status = data.Status;
+            account.Currency = data.Currency;
+            account.UpdatedAt = DateTime.Now;
+            _db.SaveChanges();
             return NoContent();
         }
 
@@ -94,12 +127,13 @@ namespace api.Controllers
             // There is no negative id - Client Error
             if (id <= 0)
                 return BadRequest("Id can not be negative");
-            var account = BankRepositry.Accounts.Where(n => n.Id == id).FirstOrDefault();
+            var account = _db.Accounts.Where(n => n.Id == id).FirstOrDefault();
             // If account not found - Client Error
             if (account == null)
                 return NotFound($"No account found with Id: {id}");
             // Removed Successfully
-            BankRepositry.Accounts.Remove(account);
+            _db.Accounts.Remove(account);
+            _db.SaveChanges();
             return Ok($"Account with id: {id} deleted successfuly");
         }
     }

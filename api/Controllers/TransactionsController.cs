@@ -10,11 +10,16 @@ namespace api.Controllers
     [Route("api/transactions")]
     public class TransactionsController : Controller
     {
+        private readonly BankingDbContext _db;
+        public TransactionsController(BankingDbContext db)
+        {
+            _db = db;
+        }
         [HttpGet("all")]
         // GET api/transactions/all
         public ActionResult<List<Transaction>> GetAllTransaction()
         {
-            return Ok(BankRepositry.Transactions);
+            return Ok(_db.Transactions);
         }
     }
 
@@ -22,13 +27,18 @@ namespace api.Controllers
     [Route("api/accounts")]
     public class TransactionController : Controller
     {
+        private readonly BankingDbContext _db;
+        public TransactionController(BankingDbContext db)
+        {
+            _db = db;
+        }
         [HttpPost("deposite")]
         // POST api/accounts/deposite
         public ActionResult Deposite([FromBody] DepositeWithdrawDTO data)
         {
             if (data == null || data.Amount < 0) return BadRequest();
 
-            var account = BankRepositry.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefault();
+            var account = _db.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefault();
 
             if (account == null) return NotFound();
 
@@ -36,15 +46,15 @@ namespace api.Controllers
             // ToDo: Create transaction and save it
             var transaction = new Transaction
             {
-                Id = BankRepositry.Transactions.Count(),
                 Type = "Deposite",
-                DeductedFromId = "Cash",
-                AddedToId = account.AccountNumber,
+                Status = "Done",
+                ToAccountId = account.Id,
                 Amount = data.Amount,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
             };
-            BankRepositry.Transactions.Add(transaction);
+            _db.Transactions.Add(transaction);
+            _db.SaveChanges();
             return NoContent();
         }
 
@@ -54,25 +64,25 @@ namespace api.Controllers
         {
             if (data == null || data.Amount < 0) return BadRequest();
 
-            var account = BankRepositry.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefault();
+            var account = _db.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefault();
 
             if (account == null) return NotFound();
-
+            // ToDo: make logic for different types of accounts
             if (data.Amount > account.Balance) return BadRequest("No enough balance to withdraw");
 
             account.Balance -= data.Amount;
             // Create transaction and save it
             var transaction = new Transaction
             {
-                Id = BankRepositry.Transactions.Count(),
                 Type = "Withdraw",
-                DeductedFromId = account.AccountNumber,
-                AddedToId = "Cash",
+                Status = "Done",
+                FromAccountId = account.Id,
                 Amount = data.Amount,
                 CreatedAt = DateTime.Now,
                 UpdatedAt= DateTime.Now,
             };
-            BankRepositry.Transactions.Add(transaction);
+            _db.Transactions.Add(transaction);
+            _db.SaveChanges();
             return NoContent();
         }
 
@@ -82,25 +92,26 @@ namespace api.Controllers
         {
             if (data == null || data.Amount < 0) return BadRequest();
 
-            var FromAccount = BankRepositry.Accounts.Where(a => a.AccountNumber == data.From).FirstOrDefault();
-            var ToAccount = BankRepositry.Accounts.Where(a => a.AccountNumber == data.To).FirstOrDefault();
+            var FromAccount = _db.Accounts.Where(a => a.AccountNumber == data.From).FirstOrDefault();
+            var ToAccount = _db.Accounts.Where(a => a.AccountNumber == data.To).FirstOrDefault();
 
             if (FromAccount == null || ToAccount == null || data.Amount > FromAccount.Balance) return BadRequest();
-
+            // ToDo: add logic for different types of accounts
             FromAccount.Balance -= data.Amount;
             ToAccount.Balance += data.Amount;
-            // ToDo: Create a transaction and save it
+
             var transaction = new Transaction
             {
-                Id = BankRepositry.Transactions.Count(),
                 Type = "Transfer",
-                DeductedFromId = FromAccount.AccountNumber,
-                AddedToId = ToAccount.AccountNumber,
+                Status = "Done",
+                FromAccountId = FromAccount.Id,
+                ToAccountId = ToAccount.Id,
                 Amount = data.Amount,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
             };
-            BankRepositry.Transactions.Add(transaction);
+            _db.Transactions.Add(transaction);
+            _db.SaveChanges();
             return NoContent();
         }
     }
