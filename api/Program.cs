@@ -5,8 +5,6 @@ using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Support JSON and XML only
-builder.Services.AddControllers(options => options.ReturnHttpNotAcceptable = true).AddXmlDataContractSerializerFormatters();
 
 // Configure Entity Framework and Database Connection
 builder.Services.AddDbContext<BankingDbContext>(options =>

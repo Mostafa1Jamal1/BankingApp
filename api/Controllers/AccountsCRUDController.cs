@@ -6,26 +6,35 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers
 {
-    [Route("api/accounts")]
+    [Route("api/v1/accounts")]
     [ApiController]
-    public class AccountsController : ControllerBase
+    public class AccountsCRUDController : ControllerBase
     {
         private readonly BankingDbContext _db;
 
-        public AccountsController(BankingDbContext db)
+        public AccountsCRUDController(BankingDbContext db)
         {
             _db = db;
         }
         [HttpGet(Name = "GetAllAccounts")]
-        // GET api/accounts
-        public ActionResult<IEnumerable<Account>> GetAllAccounts()
+        // GET api/v1/accounts
+        public ActionResult<IEnumerable<AccountDTO>> GetAllAccounts()
         {
-            return Ok(_db.Accounts);
+            var accounts = _db.Accounts.Select(a => new AccountDTO
+            {
+                AccountNumber = a.AccountNumber,
+                AccountType = a.GetType().Name,
+                Name = a.Name,
+                Balance = a.Balance,
+                Currency = a.Currency,
+                Status = a.Status,
+            });
+            return Ok(accounts);
         }
 
         [HttpGet("{id:int}", Name = "GetAccountById")]
-        // GET api/accounts/{id}
-        public ActionResult<Account> GetAccountById(int id)
+        // GET api/v1/accounts/{id}
+        public ActionResult<AccountDTO> GetAccountById(int id)
         {
             // There is no negative id - Client Error
             if (id <= 0)
@@ -35,27 +44,21 @@ namespace api.Controllers
             if (account == null)
                 return NotFound($"No account found with Id: {id}");
             // Returned Successfully
-            return Ok(account);
+            var accountDTO = new AccountDTO
+            {
+                AccountNumber = account.AccountNumber,
+                AccountType = account.GetType().Name,
+                Name = account.Name,
+                Balance = account.Balance,
+                Currency = account.Currency,
+                Status = account.Status,
+            };
+            return Ok(accountDTO);
         }
 
-        [HttpGet("{id:int}/balance", Name = "GetBalanceById")]
-        // GET api/accounts/{id}/balance
-        public ActionResult<string> GetBalanceById(int id)
-        {
-            // There is no negative id - Client Error
-            if (id <= 0)
-                return BadRequest("Id can not be negative");
-            var account = _db.Accounts.Where(n => n.Id == id).FirstOrDefault();
-            // If account not found - Client Error
-            if (account == null)
-                return NotFound($"No account found with Id: {id}");
-            // Returned Successfully
-            return Ok($"Balance: {account.Balance}");
-        }
-
-        [HttpPost("create", Name = "CreateAccount")]
-        // POST api/accounts/create
-        public ActionResult<Account> CreateAccount([FromBody] AccountDTO data)
+        [HttpPost(Name = "CreateAccount")]
+        // POST api/v1/accounts/
+        public ActionResult CreateAccount([FromBody] AccountDTO data)
         {
             if (data == null)
                 return BadRequest("Error: Need to provide account data!");
@@ -99,8 +102,8 @@ namespace api.Controllers
             return Ok("Account created Successfuly");
         }
 
-        [HttpPut("{id:int}/update", Name = "UpdateAccount")]
-        // PUT api/accounts/{id}/update
+        [HttpPut("{id:int}", Name = "UpdateAccount")]
+        // PUT api/v1/accounts/{id}
         public ActionResult UpdateAccount(int id, [FromBody] AccountDTO data)
         {
             if (id <= 0)
@@ -121,7 +124,7 @@ namespace api.Controllers
         }
 
         [HttpDelete("{id:int}", Name = "DeleteAccountById")]
-        // DELETE api/accounts/{id}
+        // DELETE api/v1/accounts/{id}
         public ActionResult DeleteAccountById(int id)
         {
             // There is no negative id - Client Error

@@ -1,37 +1,37 @@
-﻿using System.Security.Principal;
-using BankingAPI.Models.DTOs;
+﻿using api.Models.DTOs;
 using api.Models;
-using api.Models.DTOs;
+using BankingAPI.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers
 {
     [ApiController]
-    [Route("api/transactions")]
-    public class TransactionsController : Controller
-    {
-        private readonly BankingDbContext _db;
-        public TransactionsController(BankingDbContext db)
-        {
-            _db = db;
-        }
-        [HttpGet("all")]
-        // GET api/transactions/all
-        public ActionResult<List<Transaction>> GetAllTransaction()
-        {
-            return Ok(_db.Transactions);
-        }
-    }
-
-    [ApiController]
     [Route("api/accounts")]
-    public class TransactionController : Controller
+    public class OperationController : Controller
     {
         private readonly BankingDbContext _db;
-        public TransactionController(BankingDbContext db)
+
+        public OperationController(BankingDbContext db)
         {
             _db = db;
+
         }
+
+        [HttpGet("{id:int}/balance", Name = "GetBalanceById")]
+        // GET api/accounts/{id}/balance
+        public ActionResult<string> GetBalanceById(int id)
+        {
+            // There is no negative id - Client Error
+            if (id <= 0)
+                return BadRequest("Id can not be negative");
+            var account = _db.Accounts.Where(n => n.Id == id).FirstOrDefault();
+            // If account not found - Client Error
+            if (account == null)
+                return NotFound($"No account found with Id: {id}");
+            // Returned Successfully
+            return Ok($"Balance: {account.Balance}");
+        }
+
         [HttpPost("deposite")]
         // POST api/accounts/deposite
         public ActionResult Deposite([FromBody] DepositeWithdrawDTO data)
@@ -79,7 +79,7 @@ namespace api.Controllers
                 FromAccountId = account.Id,
                 Amount = data.Amount,
                 CreatedAt = DateTime.Now,
-                UpdatedAt= DateTime.Now,
+                UpdatedAt = DateTime.Now,
             };
             _db.Transactions.Add(transaction);
             _db.SaveChanges();
@@ -92,8 +92,8 @@ namespace api.Controllers
         {
             if (data == null || data.Amount < 0) return BadRequest();
 
-            var FromAccount = _db.Accounts.Where(a => a.AccountNumber == data.From).FirstOrDefault();
-            var ToAccount = _db.Accounts.Where(a => a.AccountNumber == data.To).FirstOrDefault();
+            var FromAccount = _db.Accounts.Where(a => a.Id == data.From).FirstOrDefault();
+            var ToAccount = _db.Accounts.Where(a => a.Id == data.To).FirstOrDefault();
 
             if (FromAccount == null || ToAccount == null || data.Amount > FromAccount.Balance) return BadRequest();
             // ToDo: add logic for different types of accounts
