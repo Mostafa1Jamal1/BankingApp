@@ -50,8 +50,8 @@ Before running this project, ensure you have the following installed:
 
 1. **Clone the Repository**
    ```bash
-   git clone [repository-url]
-   cd BankingApp
+   git clone https://github.com/Mostafa1Jamal1/BankingApp.git
+   cd BankingApp/api
    ```
 
 2. **Database Configuration**
@@ -74,6 +74,8 @@ Before running this project, ensure you have the following installed:
    ```
 
 5. **Access Swagger Documentation**
+
+    - get the port number from launchSettings.json file in the Properties folder
    - Navigate to `https://localhost:[port]/swagger` in your web browser
    - Full API documentation and testing interface available through Swagger UI
 
