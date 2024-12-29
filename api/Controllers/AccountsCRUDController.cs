@@ -2,7 +2,9 @@
 using System.Xml.Linq;
 using api.Models;
 using api.Models.DTOs;
+using api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -18,9 +20,9 @@ namespace api.Controllers
         }
         [HttpGet(Name = "GetAllAccounts")]
         // GET api/v1/accounts
-        public ActionResult<IEnumerable<AccountDTO>> GetAllAccounts()
+        public async Task<ActionResult<IEnumerable<AccountDTO>>> GetAllAccountsAsync()
         {
-            var accounts = _db.Accounts.Select(a => new AccountDTO
+            var accounts = await _db.Accounts.Select(a => new AccountDTO
             {
                 AccountNumber = a.AccountNumber,
                 AccountType = a.GetType().Name,
@@ -28,18 +30,18 @@ namespace api.Controllers
                 Balance = a.Balance,
                 Currency = a.Currency,
                 Status = a.Status,
-            });
+            }).ToListAsync();
             return Ok(accounts);
         }
 
         [HttpGet("{id:int}", Name = "GetAccountById")]
         // GET api/v1/accounts/{id}
-        public ActionResult<AccountDTO> GetAccountById(int id)
+        public async Task<ActionResult<AccountDTO>> GetAccountByIdAsync(int id)
         {
             // There is no negative id - Client Error
             if (id <= 0)
                 return BadRequest("Id can not be negative");
-            var account = _db.Accounts.Where(n => n.Id == id).FirstOrDefault();
+            var account = await _db.Accounts.Where(n => n.Id == id).FirstOrDefaultAsync();
             // If account not found - Client Error
             if (account == null)
                 return NotFound($"No account found with Id: {id}");
@@ -58,14 +60,14 @@ namespace api.Controllers
 
         [HttpPost(Name = "CreateAccount")]
         // POST api/v1/accounts/
-        public ActionResult CreateAccount([FromBody] AccountDTO data)
+        public async Task<ActionResult> CreateAccountAsync([FromBody] AccountDTO data)
         {
             if (data == null)
                 return BadRequest("Error: Need to provide account data!");
             // No need for this as long as [APIController] attribute exist
             //if (!ModelState.IsValid)
             //    return BadRequest(ModelState);
-            var ExistAccount = _db.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefault();
+            var ExistAccount = await _db.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefaultAsync();
             if (ExistAccount != null) return BadRequest($"Can bot use this Account number: {data.AccountNumber}");
             Account NewAccount;
             switch (data.AccountType.ToLower())
@@ -97,20 +99,20 @@ namespace api.Controllers
                 default:
                     throw new ArgumentException($"Invalid account type: {data.AccountType}");
             }
-            _db.Accounts.Add(NewAccount);
-            _db.SaveChanges();
+            await _db.Accounts.AddAsync(NewAccount);
+            await _db.SaveChangesAsync();
             return Ok("Account created Successfuly");
         }
 
         [HttpPut("{id:int}", Name = "UpdateAccount")]
         // PUT api/v1/accounts/{id}
-        public ActionResult UpdateAccount(int id, [FromBody] AccountDTO data)
+        public async Task<ActionResult> UpdateAccountAsync(int id, [FromBody] AccountDTO data)
         {
             if (id <= 0)
                 return BadRequest("Id can not be negative");
             if (data == null)
                 return BadRequest("No data provided to update");
-            var account = _db.Accounts.Where(n => n.Id == id).FirstOrDefault();
+            var account = await _db.Accounts.Where(n => n.Id == id).FirstOrDefaultAsync();
             if (account == null)
                 return NotFound($"No account found with Id: {id}");
             account.Balance = data.Balance;
@@ -119,24 +121,24 @@ namespace api.Controllers
             account.Status = data.Status;
             account.Currency = data.Currency;
             account.UpdatedAt = DateTime.Now;
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id:int}", Name = "DeleteAccountById")]
         // DELETE api/v1/accounts/{id}
-        public ActionResult DeleteAccountById(int id)
+        public async Task<ActionResult> DeleteAccountByIdAsync(int id)
         {
             // There is no negative id - Client Error
             if (id <= 0)
                 return BadRequest("Id can not be negative");
-            var account = _db.Accounts.Where(n => n.Id == id).FirstOrDefault();
+            var account = await _db.Accounts.Where(n => n.Id == id).FirstOrDefaultAsync();
             // If account not found - Client Error
             if (account == null)
                 return NotFound($"No account found with Id: {id}");
             // Removed Successfully
             _db.Accounts.Remove(account);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
             return Ok($"Account with id: {id} deleted successfuly");
         }
     }

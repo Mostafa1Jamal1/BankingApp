@@ -2,6 +2,8 @@
 using api.Models;
 using BankingAPI.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using api.Services;
 
 namespace api.Controllers
 {
@@ -19,12 +21,12 @@ namespace api.Controllers
 
         [HttpGet("{id:int}/balance", Name = "GetBalanceById")]
         // GET api/accounts/{id}/balance
-        public ActionResult<string> GetBalanceById(int id)
+        public async Task<ActionResult<string>> GetBalanceByIdAsync(int id)
         {
             // There is no negative id - Client Error
             if (id <= 0)
                 return BadRequest("Id can not be negative");
-            var account = _db.Accounts.Where(n => n.Id == id).FirstOrDefault();
+            var account = await _db.Accounts.Where(n => n.Id == id).FirstOrDefaultAsync();
             // If account not found - Client Error
             if (account == null)
                 return NotFound($"No account found with Id: {id}");
@@ -34,11 +36,11 @@ namespace api.Controllers
 
         [HttpPost("deposite")]
         // POST api/accounts/deposite
-        public ActionResult Deposite([FromBody] DepositeWithdrawDTO data)
+        public async Task<ActionResult> DepositeAsync([FromBody] DepositeWithdrawDTO data)
         {
             if (data == null || data.Amount < 0) return BadRequest();
 
-            var account = _db.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefault();
+            var account = await _db.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefaultAsync();
 
             if (account == null) return NotFound();
 
@@ -53,18 +55,18 @@ namespace api.Controllers
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
             };
-            _db.Transactions.Add(transaction);
-            _db.SaveChanges();
+            await _db.Transactions.AddAsync(transaction);
+            await _db.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpPost("withdraw")]
         // POST api/accounts/withdraw
-        public ActionResult Withdraw([FromBody] DepositeWithdrawDTO data)
+        public async Task<ActionResult> WithdrawAsync([FromBody] DepositeWithdrawDTO data)
         {
             if (data == null || data.Amount < 0) return BadRequest();
 
-            var account = _db.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefault();
+            var account = await _db.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefaultAsync();
 
             if (account == null) return NotFound();
             // ToDo: make logic for different types of accounts
@@ -81,21 +83,22 @@ namespace api.Controllers
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
             };
-            _db.Transactions.Add(transaction);
-            _db.SaveChanges();
+            await _db.Transactions.AddAsync(transaction);
+            await _db.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpPost("transfer")]
         // POST api/accounts/transfer
-        public ActionResult Transfer([FromBody] TransferDTO data)
+        public async Task<ActionResult> TransferAsync([FromBody] TransferDTO data)
         {
             if (data == null || data.Amount < 0) return BadRequest();
 
-            var FromAccount = _db.Accounts.Where(a => a.Id == data.From).FirstOrDefault();
-            var ToAccount = _db.Accounts.Where(a => a.Id == data.To).FirstOrDefault();
+            var FromAccount = await _db.Accounts.Where(a => a.Id == data.From).FirstOrDefaultAsync();
+            var ToAccount = await _db.Accounts.Where(a => a.Id == data.To).FirstOrDefaultAsync();
 
-            if (FromAccount == null || ToAccount == null || data.Amount > FromAccount.Balance) return BadRequest();
+            if (FromAccount == null || ToAccount == null || data.Amount > FromAccount.Balance)
+                return BadRequest();
             // ToDo: add logic for different types of accounts
             FromAccount.Balance -= data.Amount;
             ToAccount.Balance += data.Amount;
@@ -110,9 +113,9 @@ namespace api.Controllers
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
             };
-            _db.Transactions.Add(transaction);
-            _db.SaveChanges();
+            await _db.Transactions.AddAsync(transaction);
+            await _db.SaveChangesAsync();
             return NoContent();
         }
-    }
+    } 
 }
