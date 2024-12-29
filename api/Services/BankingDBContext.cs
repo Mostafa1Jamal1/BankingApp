@@ -1,7 +1,9 @@
 ﻿using System.Reflection.Metadata;
+using api.DataConfigurations;
+using api.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace api.Models
+namespace api.Services
 {
     public class BankingDbContext : DbContext
     {
@@ -21,10 +23,10 @@ namespace api.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Apply configurations
-            modelBuilder.ApplyConfiguration(new Configurations.AccountConfig());
-            modelBuilder.ApplyConfiguration(new Configurations.SavingsAccountConfig());
-            modelBuilder.ApplyConfiguration(new Configurations.CheckingAccountConfig());
-            modelBuilder.ApplyConfiguration(new Configurations.TransactionConfig());
+            modelBuilder.ApplyConfiguration(new AccountConfig());
+            modelBuilder.ApplyConfiguration(new SavingsAccountConfig());
+            modelBuilder.ApplyConfiguration(new CheckingAccountConfig());
+            modelBuilder.ApplyConfiguration(new TransactionConfig());
         }
     }
 }

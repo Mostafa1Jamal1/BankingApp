@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using api.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace api.Models.Configurations
+namespace api.Configurations
 {
     public class TransactionConfig : IEntityTypeConfiguration<Transaction>
     {

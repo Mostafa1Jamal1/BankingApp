@@ -1,4 +1,4 @@
-using api.Models;
+using api.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
