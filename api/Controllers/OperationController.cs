@@ -12,11 +12,12 @@ namespace api.Controllers
     public class OperationController : Controller
     {
         private readonly BankingDbContext _db;
+        private readonly AccountServices _accountService;
 
-        public OperationController(BankingDbContext db)
+        public OperationController(BankingDbContext db, AccountServices accountServices)
         {
             _db = db;
-
+            _accountService = accountServices;
         }
 
         [HttpGet("{id:int}/balance", Name = "GetBalanceById")]
@@ -34,88 +35,121 @@ namespace api.Controllers
             return Ok($"Balance: {account.Balance}");
         }
 
-        [HttpPost("deposite")]
-        // POST api/accounts/deposite
-        public async Task<ActionResult> DepositeAsync([FromBody] DepositeWithdrawDTO data)
+        [HttpPost("deposit")]
+        // POST api/accounts/deposit
+        public async Task<ActionResult> Deposit([FromBody] DepositeWithdrawDTO data)
         {
-            if (data == null || data.Amount < 0) return BadRequest();
+            if (data == null)
+                return BadRequest(new { message = "Invalid deposit data" });
 
-            var account = await _db.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefaultAsync();
+            if (data.Amount <= 0)
+                return BadRequest(new { message = "Deposit amount must be greater than zero" });
 
-            if (account == null) return NotFound();
+            // Validate account
+            var (accountSuccess, accountMessage, account) =
+                await _accountService.ValidateAccount(data.AccountNumber);
 
-            account.Balance += data.Amount;
-            // ToDo: Create transaction and save it
-            var transaction = new Transaction
+            if (!accountSuccess)
+                return NotFound(new { message = accountMessage });
+
+            // Process transaction
+            var (transactionSuccess, transactionMessage, transaction) =
+                await _accountService.ProcessTransaction(
+                    fromAccount: null,  // No source account for deposit
+                    toAccount: account,
+                    data.Amount,
+                    "Deposit"
+                );
+
+            if (!transactionSuccess)
+                return StatusCode(500, new { message = transactionMessage });
+
+            return Ok(new
             {
-                Type = "Deposite",
-                Status = "Done",
-                ToAccountId = account.Id,
-                Amount = data.Amount,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-            };
-            await _db.Transactions.AddAsync(transaction);
-            await _db.SaveChangesAsync();
-            return NoContent();
+                message = "Deposit successful",
+                transactionId = transaction.Id,
+                newBalance = account.Balance
+            });
         }
 
         [HttpPost("withdraw")]
         // POST api/accounts/withdraw
-        public async Task<ActionResult> WithdrawAsync([FromBody] DepositeWithdrawDTO data)
+        public async Task<ActionResult> Withdraw([FromBody] DepositeWithdrawDTO data)
         {
-            if (data == null || data.Amount < 0) return BadRequest();
+            if (data == null || data.Amount <= 0)
+                return BadRequest(new { message = "Invalid amount for withdrawal" });
 
-            var account = await _db.Accounts.Where(a => a.AccountNumber == data.AccountNumber).FirstOrDefaultAsync();
+            // Validate account
+            var (accountSuccess, accountMessage, account) =
+                await _accountService.ValidateAccount(data.AccountNumber);
 
-            if (account == null) return NotFound();
-            // ToDo: make logic for different types of accounts
-            if (data.Amount > account.Balance) return BadRequest("No enough balance to withdraw");
+            if (!accountSuccess)
+                return NotFound(new { message = accountMessage });
 
-            account.Balance -= data.Amount;
-            // Create transaction and save it
-            var transaction = new Transaction
+            // Validate withdrawal
+            var (withdrawalSuccess, withdrawalMessage, availableAmount) =
+                _accountService.ValidateWithdrawal(account, data.Amount);
+
+            if (!withdrawalSuccess)
+                return BadRequest(new { message = withdrawalMessage });
+
+            // Process transaction
+            var (transactionSuccess, transactionMessage, transaction) =
+                await _accountService.ProcessTransaction(account, null, data.Amount, "Withdrawal");
+
+            if (!transactionSuccess)
+                return StatusCode(500, new { message = transactionMessage });
+
+            return Ok(new
             {
-                Type = "Withdraw",
-                Status = "Done",
-                FromAccountId = account.Id,
-                Amount = data.Amount,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-            };
-            await _db.Transactions.AddAsync(transaction);
-            await _db.SaveChangesAsync();
-            return NoContent();
+                message = "Withdrawal successful",
+                transactionId = transaction.Id,
+                newBalance = account.Balance
+            });
         }
 
         [HttpPost("transfer")]
         // POST api/accounts/transfer
-        public async Task<ActionResult> TransferAsync([FromBody] TransferDTO data)
+        public async Task<ActionResult> Transfer([FromBody] TransferDTO data)
         {
-            if (data == null || data.Amount < 0) return BadRequest();
+            if (data == null || data.Amount <= 0)
+                return BadRequest(new { message = "Invalid amount for transfer" });
 
-            var FromAccount = await _db.Accounts.Where(a => a.Id == data.From).FirstOrDefaultAsync();
-            var ToAccount = await _db.Accounts.Where(a => a.Id == data.To).FirstOrDefaultAsync();
+            // Validate from account
+            var (fromAccountSuccess, fromAccountMessage, fromAccount) =
+                await _accountService.ValidateAccount(data.FromAccountNumber);
 
-            if (FromAccount == null || ToAccount == null || data.Amount > FromAccount.Balance)
-                return BadRequest();
-            // ToDo: add logic for different types of accounts
-            FromAccount.Balance -= data.Amount;
-            ToAccount.Balance += data.Amount;
+            if (!fromAccountSuccess)
+                return NotFound(new { message = fromAccountMessage });
 
-            var transaction = new Transaction
+            // Validate to account
+            var (toAccountSuccess, toAccountMessage, toAccount) =
+                await _accountService.ValidateAccount(data.ToAccountNumber);
+
+            if (!toAccountSuccess)
+                return NotFound(new { message = toAccountMessage });
+
+            // Validate withdrawal from source account
+            var (withdrawalSuccess, withdrawalMessage, _) =
+                _accountService.ValidateWithdrawal(fromAccount, data.Amount);
+
+            if (!withdrawalSuccess)
+                return BadRequest(new { message = withdrawalMessage });
+
+            // Process transaction
+            var (transactionSuccess, transactionMessage, transaction) =
+                await _accountService.ProcessTransaction(fromAccount, toAccount, data.Amount, "Transfer");
+
+            if (!transactionSuccess)
+                return StatusCode(500, new { message = transactionMessage });
+
+            return Ok(new
             {
-                Type = "Transfer",
-                Status = "Done",
-                FromAccountId = FromAccount.Id,
-                ToAccountId = ToAccount.Id,
-                Amount = data.Amount,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-            };
-            await _db.Transactions.AddAsync(transaction);
-            await _db.SaveChangesAsync();
-            return NoContent();
+                message = "Transfer successful",
+                transactionId = transaction.Id,
+                fromBalance = fromAccount.Balance,
+                toBalance = toAccount.Balance
+            });
         }
     } 
 }

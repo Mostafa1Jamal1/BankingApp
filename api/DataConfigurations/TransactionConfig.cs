@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace api.Configurations
+namespace api.DataConfigurations
 {
     public class TransactionConfig : IEntityTypeConfiguration<Transaction>
     {

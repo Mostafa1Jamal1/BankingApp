@@ -6,10 +6,10 @@ namespace BankingAPI.Models.DTOs
     {
         // This should be modified accourding to the requirements
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Account number must be exactly 10 digits.")]
-        public required int From { get; set; }
+        public required string FromAccountNumber { get; set; }
 
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Account number must be exactly 10 digits.")]
-        public required int To { get; set; }
+        public required string ToAccountNumber { get; set; }
 
         public decimal Amount { get; set; }
     }
